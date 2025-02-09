@@ -35,7 +35,7 @@ debug.log
 
 # Prisma
 /prisma/*.db
-/prisma/migrations/
+
 
 # Misc
 COMMIT_EDITMSG
