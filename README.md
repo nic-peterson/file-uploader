@@ -111,30 +111,34 @@ This project allows users to:
 
 ```
 file-uploader-project/
-├── controllers/
-│ ├── authController.js
-│ ├── fileController.js
-│ └── folderController.js
-├── models/
-│ ├── userModel.js
-│ ├── fileModel.js
-│ └── folderModel.js
-├── routes/
-│ ├── authRoutes.js
-│ ├── fileRoutes.js
-│ └── folderRoutes.js
-├── views/
-│ ├── index.ejs
-│ ├── login.ejs
-│ ├── signup.ejs
-│ └── ...
+├── __tests__/              # Test files
+│   ├── unit/
+│   └── integration/
+├── src/
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── fileController.js
+│   │   └── folderController.js
+│   ├── models/
+│   │   ├── userModel.js
+│   │   ├── fileModel.js
+│   │   └── folderModel.js
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── fileRoutes.js
+│   │   └── folderRoutes.js
+│   └── views/
+│       ├── index.ejs
+│       ├── login.ejs
+│       ├── signup.ejs
+│       └── ...
 ├── prisma/
-│ ├── schema.prisma # Your Prisma schema
-│ └── migrations/ # Auto-generated migrations
+│   ├── schema.prisma        # Your Prisma schema
+│   └── migrations/          # Auto-generated migrations
 ├── PROJECT_PLAN_PRD.md
 ├── README.md
 ├── package.json
-└── .env # Not committed to version control
+└── .env                     # Not committed to version control
 ```
 
 ## Contributing
