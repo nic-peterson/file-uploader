@@ -12,6 +12,7 @@
     "prisma": "^6.3.1"
   },
   "devDependencies": {
+    "dotenv-cli": "^8.0.0",
     "eslint": "^9.20.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.3",
@@ -20,8 +21,20 @@
     "supertest": "^7.0.0"
   },
   "scripts": {
+    "start": "NODE_ENV=production dotenv -e .env.production node src/server.js",
+    "dev": "NODE_ENV=development dotenv -e .env.development node src/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "server": "node --watch src/server.js",
+    "clean": "rm -rf node_modules package-lock.json",
+    "reinstall": "npm run clean && npm install",
+    "prepare": "prisma generate",
+    "prisma:dev": "dotenv -e .env.development prisma",
+    "migrate:dev": "dotenv -e .env.development prisma migrate dev",
+    "studio:dev": "dotenv -e .env.development prisma studio"
   }
 }
