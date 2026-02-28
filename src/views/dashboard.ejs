@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - File Uploader</title>
+</head>
+<body>
+  <h1>Welcome, <%= user.name || user.email %>!</h1>
+
+  <% if (messages && messages.error && messages.error.length > 0) { %>
+    <p style="color: red;"><%= messages.error[0] %></p>
+  <% } %>
+  <% if (messages && messages.success && messages.success.length > 0) { %>
+    <p style="color: green;"><%= messages.success[0] %></p>
+  <% } %>
+
+  <p>Your files will appear here.</p>
+
+  <form action="/logout" method="POST">
+    <button type="submit">Log Out</button>
+  </form>
+</body>
+</html>
