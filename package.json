@@ -28,7 +28,7 @@
     ]
   },
   "scripts": {
-    "start": "NODE_ENV=production node src/server.js",
+    "start": "NODE_ENV=production npx prisma migrate deploy && node src/server.js",
     "dev": "NODE_ENV=development dotenv -e .env.development node src/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -39,7 +39,7 @@
     "server": "node --watch src/server.js",
     "clean": "rm -rf node_modules package-lock.json",
     "reinstall": "npm run clean && npm install",
-    "prepare": "prisma generate",
+    "postinstall": "prisma generate",
     "prisma:dev": "dotenv -e .env.development prisma",
     "migrate:dev": "dotenv -e .env.development prisma migrate dev",
     "studio:dev": "dotenv -e .env.development prisma studio"
