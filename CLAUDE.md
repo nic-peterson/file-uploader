@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev          # Start development server (loads .env.development)
-npm run start        # Start production server (loads .env.production)
+npm start            # Start production server (Railway uses this)
 npm test             # Run all tests
 npm run test:watch   # Run tests in watch mode
 npm run test:coverage # Run tests with coverage report
@@ -27,17 +27,21 @@ To run a single test file: `npx jest __tests__/app.test.js`
 **Entry point**: `src/server.js` — loads env and starts the HTTP listener. App logic lives in `src/app.js`.
 
 The app is a standard Express MVC app:
-- **Routes** → **Controllers** → **Models** (Prisma) / **Services** (Supabase)
+- **Routes** → **Controllers** → **Models** (Prisma)
 - Authentication: PassportJS local strategy with `express-session` + `connect-pg-simple` (sessions stored in Postgres)
-- File storage: Files go through Multer (in-memory buffer) → Supabase Storage; metadata (name, type, size, url, userId, folderId) stored in Postgres via Prisma
-- Database: PostgreSQL via Prisma ORM
+- File storage: TBD — Supabase removed, will use Railway-hosted storage or similar
+- Database: PostgreSQL via Prisma ORM (hosted on Railway)
 
-**Planned structure** (being built out on `feat/passport-auth` branch):
 ```
 src/
   app.js          # Express app config, middleware, routes
   server.js       # HTTP server entry point
+  config/
+    passport.js   # LocalStrategy, serialize/deserialize
+    prisma.js     # Shared PrismaClient singleton
   controllers/    # Route handlers (auth, file, folder)
+  middleware/
+    isAuthenticated.js  # Redirects unauthenticated requests to /login
   models/         # Prisma data access layer (user, file, folder)
   routes/         # Express routers (auth, file, folder)
   views/          # EJS templates
@@ -54,12 +58,18 @@ prisma/
 
 ## Environment
 
-Two env files required: `.env.development` and `.env.production`. Required vars:
-- `DATABASE_URL` — PostgreSQL connection string
-- `SUPABASE_URL` — Supabase project URL
-- `SUPABASE_ANON_KEY` — Supabase anon/public key
+**Local dev**: `.env.development` (loaded by `npm run dev` via dotenv-cli)
+**Production**: Railway injects env vars directly — no `.env` file needed.
+
+Required vars:
+- `DATABASE_URL` — PostgreSQL connection string (Railway)
 - `SESSION_SECRET` — Secret for express-session
-- `PORT` — optional, defaults to 3000
+- `NODE_ENV` — `development` locally (set inline by dev script), `production` on Railway
+- `PORT` — optional, defaults to 3000 (Railway sets this automatically)
+
+## Deployment
+
+Hosted on Railway. The GitHub service auto-deploys `main` on push. Railway runs `npm start` → `node src/server.js`. Prisma migrations must be run manually via `railway run npm run migrate:dev` or the Railway shell after schema changes.
 
 ## Code Style
 
