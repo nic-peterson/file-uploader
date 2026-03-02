@@ -20,8 +20,4 @@ router.post(
 
 router.post('/logout', isAuthenticated, authController.logout);
 
-router.get('/dashboard', isAuthenticated, (req, res) => {
-  res.render('dashboard', { user: req.user, messages: res.locals.messages });
-});
-
 module.exports = router;

@@ -5,6 +5,7 @@ const connectPgSimple = require('connect-pg-simple');
 const passport = require('./config/passport');
 const flash = require('express-flash');
 const authRoutes = require('./routes/authRoutes');
+const fileRoutes = require('./routes/fileRoutes');
 
 const PgStore = connectPgSimple(session);
 const app = express();
@@ -37,6 +38,7 @@ app.use(passport.session());
 app.use(flash());
 
 app.use(authRoutes);
+app.use(fileRoutes);
 
 app.get('/api/test', (_req, res) => {
   res.json({ message: 'API is working!' });

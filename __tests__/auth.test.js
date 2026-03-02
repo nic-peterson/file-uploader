@@ -8,7 +8,19 @@ jest.mock('connect-pg-simple', () => {
 });
 
 jest.mock('../src/models/userModel');
+jest.mock('../src/models/fileModel');
+jest.mock('../src/config/supabase', () => ({
+  storage: {
+    from: jest.fn(() => ({
+      upload: jest.fn().mockResolvedValue({ data: {}, error: null }),
+      getPublicUrl: jest.fn().mockReturnValue({ data: { publicUrl: 'https://test.supabase.co/...' } }),
+      remove: jest.fn().mockResolvedValue({ data: {}, error: null }),
+    })),
+  },
+}));
+
 const userModel = require('../src/models/userModel');
+const fileModel = require('../src/models/fileModel');
 
 const app = require('../src/app');
 
@@ -21,6 +33,7 @@ const FAKE_USER = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  fileModel.getFilesByUser.mockResolvedValue([]);
 });
 
 describe('GET /signup', () => {
