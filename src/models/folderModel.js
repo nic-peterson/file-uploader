@@ -15,7 +15,12 @@ const getFoldersByUser = async (userId) => {
 };
 
 const getFolderById = async (id) => {
-  return prisma.folder.findUnique({ where: { id } });
+  try {
+    return await prisma.folder.findUnique({ where: { id } });
+  } catch (err) {
+    if (err.constructor.name === 'PrismaClientValidationError') return null;
+    throw err;
+  }
 };
 
 const updateFolder = async (id, { name }) => {

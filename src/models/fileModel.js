@@ -1,8 +1,8 @@
 const prisma = require('../config/prisma');
 
-const createFile = async ({ name, type, size, url, userId }) => {
+const createFile = async ({ name, type, size, url, userId, folderId }) => {
   return prisma.file.create({
-    data: { name, type, size, url, userId },
+    data: { name, type, size, url, userId, folderId: folderId || null },
   });
 };
 
