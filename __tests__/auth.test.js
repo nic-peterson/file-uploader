@@ -9,6 +9,7 @@ jest.mock('connect-pg-simple', () => {
 
 jest.mock('../src/models/userModel');
 jest.mock('../src/models/fileModel');
+jest.mock('../src/models/folderModel');
 jest.mock('../src/config/supabase', () => ({
   storage: {
     from: jest.fn(() => ({
@@ -21,6 +22,7 @@ jest.mock('../src/config/supabase', () => ({
 
 const userModel = require('../src/models/userModel');
 const fileModel = require('../src/models/fileModel');
+const folderModel = require('../src/models/folderModel');
 
 const app = require('../src/app');
 
@@ -34,6 +36,7 @@ const FAKE_USER = {
 beforeEach(() => {
   jest.clearAllMocks();
   fileModel.getFilesByUser.mockResolvedValue([]);
+  folderModel.getFoldersByUser.mockResolvedValue([]);
 });
 
 describe('GET /signup', () => {

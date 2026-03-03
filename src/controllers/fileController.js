@@ -2,13 +2,26 @@ const path = require('path');
 const { randomUUID } = require('crypto');
 const supabase = require('../config/supabase');
 const fileModel = require('../models/fileModel');
+const folderModel = require('../models/folderModel');
 
 const BUCKET = process.env.SUPABASE_STORAGE_BUCKET;
 
 const getFiles = async (req, res, next) => {
   try {
-    const files = await fileModel.getFilesByUser(req.user.id);
-    res.render('dashboard', { user: req.user, files, messages: res.locals.messages });
+    const [folders, allFiles] = await Promise.all([
+      folderModel.getFoldersByUser(req.user.id),
+      fileModel.getFilesByUser(req.user.id),
+    ]);
+    const rootFiles = allFiles.filter((f) => !f.folderId);
+    const viewMode = req.query.view === 'flat' ? 'flat' : 'folder';
+    res.render('dashboard', {
+      user: req.user,
+      folders,
+      files: allFiles,
+      rootFiles,
+      viewMode,
+      messages: res.locals.messages,
+    });
   } catch (err) {
     next(err);
   }
@@ -39,10 +52,12 @@ const uploadFile = async (req, res, next) => {
       size: req.file.size,
       url: urlData.publicUrl,
       userId: req.user.id,
+      folderId: req.body.folderId || null,
     });
 
     req.flash('success', 'File uploaded successfully.');
-    res.redirect('/dashboard');
+    const dest = req.body.folderId ? `/folders/${req.body.folderId}` : '/dashboard';
+    res.redirect(dest);
   } catch (err) {
     next(err);
   }
@@ -80,4 +95,26 @@ const deleteFile = async (req, res, next) => {
   }
 };
 
-module.exports = { getFiles, uploadFile, deleteFile };
+const moveFile = async (req, res, next) => {
+  try {
+    const file = await fileModel.getFileById(req.params.id);
+
+    if (!file) {
+      req.flash('error', 'File not found.');
+      return res.redirect('/dashboard');
+    }
+
+    if (file.userId !== req.user.id) {
+      req.flash('error', 'You do not have permission to move this file.');
+      return res.redirect('/dashboard');
+    }
+
+    await fileModel.moveFile(req.params.id, req.body.folderId || null);
+    req.flash('success', 'File moved.');
+    res.redirect(req.get('Referrer') || '/dashboard');
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getFiles, uploadFile, deleteFile, moveFile };
