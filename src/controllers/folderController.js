@@ -92,7 +92,6 @@ const viewFolder = async (req, res, next) => {
       folder,
       files,
       allFolders,
-      messages: res.locals.messages,
     });
   } catch (err) {
     next(err);

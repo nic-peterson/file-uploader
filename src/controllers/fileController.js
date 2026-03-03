@@ -20,7 +20,6 @@ const getFiles = async (req, res, next) => {
       files: allFiles,
       rootFiles,
       viewMode,
-      messages: res.locals.messages,
     });
   } catch (err) {
     next(err);
