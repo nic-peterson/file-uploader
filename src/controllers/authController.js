@@ -1,7 +1,7 @@
 const userModel = require('../models/userModel');
 
 const getSignup = (req, res) => {
-  res.render('signup', { messages: res.locals.messages });
+  res.render('signup');
 };
 
 const postSignup = async (req, res, next) => {
@@ -33,7 +33,7 @@ const postSignup = async (req, res, next) => {
 };
 
 const getLogin = (req, res) => {
-  res.render('login', { messages: res.locals.messages });
+  res.render('login');
 };
 
 const logout = (req, res, next) => {

@@ -9,6 +9,7 @@ jest.mock('connect-pg-simple', () => {
 
 jest.mock('../src/models/userModel');
 jest.mock('../src/models/fileModel');
+jest.mock('../src/models/folderModel');
 jest.mock('../src/config/supabase', () => ({
   storage: {
     from: jest.fn(() => ({
@@ -21,6 +22,7 @@ jest.mock('../src/config/supabase', () => ({
 
 const userModel = require('../src/models/userModel');
 const fileModel = require('../src/models/fileModel');
+const folderModel = require('../src/models/folderModel');
 const app = require('../src/app');
 
 const FAKE_USER = {
@@ -55,6 +57,7 @@ const loginAgent = async () => {
 beforeEach(() => {
   jest.clearAllMocks();
   fileModel.getFilesByUser.mockResolvedValue([]);
+  folderModel.getFoldersByUser.mockResolvedValue([]);
 });
 
 describe('GET /dashboard', () => {
@@ -64,14 +67,16 @@ describe('GET /dashboard', () => {
     expect(res.headers.location).toBe('/login');
   });
 
-  test('renders dashboard for authenticated users and calls getFilesByUser', async () => {
+  test('renders dashboard for authenticated users and calls getFilesByUser and getFoldersByUser', async () => {
     fileModel.getFilesByUser.mockResolvedValue([FAKE_FILE]);
+    folderModel.getFoldersByUser.mockResolvedValue([]);
     const agent = await loginAgent();
 
     const res = await agent.get('/dashboard');
     expect(res.status).toBe(200);
     expect(res.text).toContain('Welcome');
     expect(fileModel.getFilesByUser).toHaveBeenCalledWith(FAKE_USER.id);
+    expect(folderModel.getFoldersByUser).toHaveBeenCalledWith(FAKE_USER.id);
   });
 });
 
