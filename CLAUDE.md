@@ -29,7 +29,7 @@ To run a single test file: `npx jest __tests__/app.test.js`
 The app is a standard Express MVC app:
 - **Routes** → **Controllers** → **Models** (Prisma)
 - Authentication: PassportJS local strategy with `express-session` + `connect-pg-simple` (sessions stored in Postgres)
-- File storage: TBD — Supabase removed, will use Railway-hosted storage or similar
+- File storage: Supabase Storage (bucket name in `SUPABASE_STORAGE_BUCKET` env var)
 - Database: PostgreSQL via Prisma ORM (hosted on Railway)
 
 ```
@@ -66,6 +66,9 @@ Required vars:
 - `SESSION_SECRET` — Secret for express-session
 - `NODE_ENV` — `development` locally (set inline by dev script), `production` on Railway
 - `PORT` — optional, defaults to 3000 (Railway sets this automatically)
+- `SUPABASE_URL` — Supabase project URL
+- `SUPABASE_ANON_KEY` — Supabase anon/public key
+- `SUPABASE_STORAGE_BUCKET` — Supabase storage bucket name
 
 ## Deployment
 
