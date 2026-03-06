@@ -85,6 +85,7 @@
       <% } else { %>
         <p class="empty-state">This folder is empty.</p>
       <% } %>
+      <%- include('partials/pagination', { pagination, query }) %>
     </div>
 
   </div>

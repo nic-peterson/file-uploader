@@ -6,21 +6,32 @@ const folderModel = require('../models/folderModel');
 
 const BUCKET = process.env.SUPABASE_STORAGE_BUCKET;
 
+const PAGE_SIZE = 20;
+
 const getFiles = async (req, res, next) => {
   try {
-    const [folders, allFiles] = await Promise.all([
-      folderModel.getFoldersByUser(req.user.id),
-      fileModel.getFilesByUser(req.user.id),
-    ]);
-    const rootFiles = allFiles.filter((f) => !f.folderId);
     const viewMode = req.query.view === 'flat' ? 'flat' : 'folder';
-    res.render('dashboard', {
-      user: req.user,
-      folders,
-      files: allFiles,
-      rootFiles,
-      viewMode,
-    });
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const skip = (page - 1) * PAGE_SIZE;
+
+    if (viewMode === 'flat') {
+      const [folders, allFiles] = await Promise.all([
+        folderModel.getFoldersByUser(req.user.id),
+        fileModel.getFilesByUser(req.user.id),
+      ]);
+      return res.render('dashboard', { user: req.user, folders, files: allFiles, rootFiles: [], viewMode, pagination: null, query: req.query });
+    }
+
+    const [folders, rootFiles, totalRootFiles] = await Promise.all([
+      folderModel.getFoldersByUser(req.user.id),
+      fileModel.getRootFiles(req.user.id, { skip, take: PAGE_SIZE }),
+      fileModel.countRootFiles(req.user.id),
+    ]);
+
+    const totalPages = Math.ceil(totalRootFiles / PAGE_SIZE);
+    const pagination = { page, totalPages, total: totalRootFiles, pageSize: PAGE_SIZE };
+
+    res.render('dashboard', { user: req.user, folders, files: [], rootFiles, viewMode, pagination, query: req.query });
   } catch (err) {
     next(err);
   }

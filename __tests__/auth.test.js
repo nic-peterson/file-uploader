@@ -37,6 +37,8 @@ const FAKE_USER = {
 beforeEach(() => {
   jest.clearAllMocks();
   fileModel.getFilesByUser.mockResolvedValue([]);
+  fileModel.getRootFiles.mockResolvedValue([]);
+  fileModel.countRootFiles.mockResolvedValue(0);
   folderModel.getFoldersByUser.mockResolvedValue([]);
 });
 
