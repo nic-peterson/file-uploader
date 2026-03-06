@@ -4,206 +4,228 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard - File Uploader</title>
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <h1>Welcome, <%= user.name || user.email %>!</h1>
+  <div class="page-wrap">
 
-  <% if (messages && messages.error && messages.error.length > 0) { %>
-    <p style="color: red;"><%= messages.error[0] %></p>
-  <% } %>
-  <% if (messages && messages.success && messages.success.length > 0) { %>
-    <p style="color: green;"><%= messages.success[0] %></p>
-  <% } %>
+    <div class="topbar">
+      <h1>Welcome, <%= user.name || user.email %>!</h1>
+      <div class="topbar-actions">
+        <span class="view-toggle">
+          <% if (viewMode === 'folder') { %>
+            <span class="active">Folders</span> &nbsp;|&nbsp; <a href="?view=flat">Flat</a>
+          <% } else { %>
+            <a href="/dashboard">Folders</a> &nbsp;|&nbsp; <span class="active">Flat</span>
+          <% } %>
+        </span>
+        <form action="/logout" method="POST" style="margin:0;">
+          <button type="submit" class="btn--logout">Log out</button>
+        </form>
+      </div>
+    </div>
 
-  <p>
+    <% if (messages && messages.error && messages.error.length > 0) { %>
+      <div class="flash flash--error"><%= messages.error[0] %></div>
+    <% } %>
+    <% if (messages && messages.success && messages.success.length > 0) { %>
+      <div class="flash flash--success"><%= messages.success[0] %></div>
+    <% } %>
+
     <% if (viewMode === 'folder') { %>
-      Folder View | <a href="?view=flat">Flat View</a>
+
+      <!-- Folders section -->
+      <div class="card">
+        <h2>Folders</h2>
+        <form action="/folders" method="POST" class="form-row" style="margin-bottom: 1rem;">
+          <input type="text" name="name" placeholder="New folder name" required />
+          <button type="submit" class="btn btn--primary btn--sm">Create Folder</button>
+        </form>
+
+        <% if (folders && folders.length > 0) { %>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Files</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% folders.forEach(function(folder) { %>
+                <tr>
+                  <td><a href="/folders/<%= folder.id %>"><%= folder.name %></a></td>
+                  <td style="color: var(--muted);"><%= folder._count.files %></td>
+                  <td>
+                    <div class="td-actions">
+                      <form action="/folders/<%= folder.id %>/rename" method="POST" class="rename-form">
+                        <input type="text" name="name" value="<%= folder.name %>" required />
+                        <button type="submit" class="btn btn--ghost btn--sm">Rename</button>
+                      </form>
+                      <form action="/folders/<%= folder.id %>/delete" method="POST">
+                        <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p class="empty-state">No folders yet.</p>
+        <% } %>
+      </div>
+
+      <!-- Upload section -->
+      <div class="card">
+        <h2>Upload a File</h2>
+        <form action="/files/upload" method="POST" enctype="multipart/form-data" class="form-row">
+          <input type="file" name="file" required />
+          <select name="folderId">
+            <option value="">No folder</option>
+            <% if (folders) { folders.forEach(function(folder) { %>
+              <option value="<%= folder.id %>"><%= folder.name %></option>
+            <% }); } %>
+          </select>
+          <button type="submit" class="btn btn--primary btn--sm">Upload</button>
+        </form>
+      </div>
+
+      <!-- Uncategorized files -->
+      <div class="card">
+        <h2>Uncategorized Files</h2>
+        <% if (rootFiles && rootFiles.length > 0) { %>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rootFiles.forEach(function(file) { %>
+                <tr>
+                  <td><%= file.name %></td>
+                  <td style="color: var(--muted);"><%= file.type %></td>
+                  <td style="color: var(--muted);"><%= (file.size / 1024).toFixed(1) %> KB</td>
+                  <td style="color: var(--muted);"><%= new Date(file.createdAt).toLocaleDateString() %></td>
+                  <td>
+                    <div class="td-actions">
+                      <a href="<%= file.url %>" target="_blank" class="btn btn--ghost btn--sm">Download</a>
+                      <form action="/files/<%= file.id %>/move" method="POST" class="form-row" style="gap:0.3rem;">
+                        <select name="folderId" style="font-size:0.78rem; padding: 0.25rem 0.4rem;">
+                          <option value="">Root</option>
+                          <% if (folders) { folders.forEach(function(folder) { %>
+                            <option value="<%= folder.id %>"><%= folder.name %></option>
+                          <% }); } %>
+                        </select>
+                        <button type="submit" class="btn btn--ghost btn--sm">Move</button>
+                      </form>
+                      <form action="/files/<%= file.id %>/delete" method="POST">
+                        <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p class="empty-state">No uncategorized files.</p>
+        <% } %>
+      </div>
+
     <% } else { %>
-      <a href="/dashboard">Folder View</a> | Flat View
-    <% } %>
-  </p>
 
-  <% if (viewMode === 'folder') { %>
+      <!-- Flat view -->
+      <div class="card">
+        <h2>Upload a File</h2>
+        <form action="/files/upload" method="POST" enctype="multipart/form-data" class="form-row">
+          <input type="file" name="file" required />
+          <select name="folderId">
+            <option value="">No folder</option>
+            <% if (folders) { folders.forEach(function(folder) { %>
+              <option value="<%= folder.id %>"><%= folder.name %></option>
+            <% }); } %>
+          </select>
+          <button type="submit" class="btn btn--primary btn--sm">Upload</button>
+        </form>
+      </div>
 
-    <h2>Folders</h2>
-    <form action="/folders" method="POST" style="margin-bottom: 1em;">
-      <input type="text" name="name" placeholder="New folder name" required />
-      <button type="submit">Create Folder</button>
-    </form>
-
-    <% if (folders && folders.length > 0) { %>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Files</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% folders.forEach(function(folder) { %>
-            <tr>
-              <td><%= folder.name %></td>
-              <td><%= folder._count.files %></td>
-              <td>
-                <a href="/folders/<%= folder.id %>">View</a>
-                <form action="/folders/<%= folder.id %>/rename" method="POST" style="display:inline;">
-                  <input type="text" name="name" value="<%= folder.name %>" required />
-                  <button type="submit">Rename</button>
-                </form>
-                <form action="/folders/<%= folder.id %>/delete" method="POST" style="display:inline;">
-                  <button type="submit">Delete</button>
-                </form>
-              </td>
-            </tr>
-          <% }); %>
-        </tbody>
-      </table>
-    <% } else { %>
-      <p>No folders yet.</p>
-    <% } %>
-
-    <h2>Upload a File</h2>
-    <form action="/files/upload" method="POST" enctype="multipart/form-data">
-      <input type="file" name="file" required />
-      <select name="folderId">
-        <option value="">No folder</option>
-        <% if (folders) { folders.forEach(function(folder) { %>
-          <option value="<%= folder.id %>"><%= folder.name %></option>
-        <% }); } %>
-      </select>
-      <button type="submit">Upload</button>
-    </form>
-
-    <h2>Uncategorized Files</h2>
-    <% if (rootFiles && rootFiles.length > 0) { %>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Size</th>
-            <th>Uploaded</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% rootFiles.forEach(function(file) { %>
-            <tr>
-              <td><%= file.name %></td>
-              <td><%= file.type %></td>
-              <td><%= (file.size / 1024).toFixed(1) %> KB</td>
-              <td><%= new Date(file.createdAt).toLocaleDateString() %></td>
-              <td>
-                <a href="<%= file.url %>" target="_blank">Download</a>
-                <form action="/files/<%= file.id %>/move" method="POST" style="display:inline;">
-                  <select name="folderId">
-                    <option value="">Root</option>
-                    <% if (folders) { folders.forEach(function(folder) { %>
-                      <option value="<%= folder.id %>"><%= folder.name %></option>
-                    <% }); } %>
-                  </select>
-                  <button type="submit">Move</button>
-                </form>
-                <form action="/files/<%= file.id %>/delete" method="POST" style="display:inline;">
-                  <button type="submit">Delete</button>
-                </form>
-              </td>
-            </tr>
-          <% }); %>
-        </tbody>
-      </table>
-    <% } else { %>
-      <p>No uncategorized files.</p>
-    <% } %>
-
-  <% } else { %>
-
-    <h2>Upload a File</h2>
-    <form action="/files/upload" method="POST" enctype="multipart/form-data">
-      <input type="file" name="file" required />
-      <select name="folderId">
-        <option value="">No folder</option>
-        <% if (folders) { folders.forEach(function(folder) { %>
-          <option value="<%= folder.id %>"><%= folder.name %></option>
-        <% }); } %>
-      </select>
-      <button type="submit">Upload</button>
-    </form>
-
-    <h2>All Files</h2>
-    <pre style="background: #f4f4f4; padding: 1em; font-family: monospace;">
+      <div class="card">
+        <h2>All Files</h2>
+        <div class="flat-tree">
 <% if (folders) { folders.forEach(function(folder) { %>
-📁 <%= folder.name %> (<%= folder._count.files %> files)
+<span class="folder-heading">📁 <%= folder.name %> (<%= folder._count.files %> files)</span>
 <% const folderFiles = files ? files.filter(function(f) { return f.folderId === folder.id; }) : []; %>
-<% folderFiles.forEach(function(file) { %>
-  • <%= file.name %>  <%= (file.size / 1024).toFixed(1) %> KB  <%= new Date(file.createdAt).toLocaleDateString() %>
+<% folderFiles.forEach(function(file) { %><span class="file-line">• <%= file.name %>  <%= (file.size / 1024).toFixed(1) %> KB  <%= new Date(file.createdAt).toLocaleDateString() %></span>
 <% }); %>
-<% if (folderFiles.length === 0) { %>
-  (empty)
+<% if (folderFiles.length === 0) { %><span class="empty">  (empty)</span>
 <% } %>
 
 <% }); } %>
-📁 Root
+<span class="folder-heading">📁 Root</span>
 <% const rootFilesList = files ? files.filter(function(f) { return !f.folderId; }) : []; %>
-<% rootFilesList.forEach(function(file) { %>
-  • <%= file.name %>  <%= (file.size / 1024).toFixed(1) %> KB  <%= new Date(file.createdAt).toLocaleDateString() %>
+<% rootFilesList.forEach(function(file) { %><span class="file-line">• <%= file.name %>  <%= (file.size / 1024).toFixed(1) %> KB  <%= new Date(file.createdAt).toLocaleDateString() %></span>
 <% }); %>
-<% if (rootFilesList.length === 0) { %>
-  (empty)
+<% if (rootFilesList.length === 0) { %><span class="empty">  (empty)</span>
 <% } %>
-    </pre>
+        </div>
 
-    <% if (files && files.length > 0) { %>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Size</th>
-            <th>Uploaded</th>
-            <th>Folder</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% files.forEach(function(file) { %>
-            <tr>
-              <td><%= file.name %></td>
-              <td><%= file.type %></td>
-              <td><%= (file.size / 1024).toFixed(1) %> KB</td>
-              <td><%= new Date(file.createdAt).toLocaleDateString() %></td>
-              <td>
-                <% const fileFolder = folders ? folders.find(function(fd) { return fd.id === file.folderId; }) : null; %>
-                <%= fileFolder ? fileFolder.name : 'Root' %>
-              </td>
-              <td>
-                <a href="<%= file.url %>" target="_blank">Download</a>
-                <form action="/files/<%= file.id %>/move" method="POST" style="display:inline;">
-                  <select name="folderId">
-                    <option value="">Root</option>
-                    <% if (folders) { folders.forEach(function(folder) { %>
-                      <option value="<%= folder.id %>" <%= file.folderId === folder.id ? 'selected' : '' %>><%= folder.name %></option>
-                    <% }); } %>
-                  </select>
-                  <button type="submit">Move</button>
-                </form>
-                <form action="/files/<%= file.id %>/delete" method="POST" style="display:inline;">
-                  <button type="submit">Delete</button>
-                </form>
-              </td>
-            </tr>
-          <% }); %>
-        </tbody>
-      </table>
-    <% } else { %>
-      <p>You have not uploaded any files yet.</p>
+        <% if (files && files.length > 0) { %>
+          <table style="margin-top: 1.5rem;">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Uploaded</th>
+                <th>Folder</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% files.forEach(function(file) { %>
+                <tr>
+                  <td><%= file.name %></td>
+                  <td style="color: var(--muted);"><%= file.type %></td>
+                  <td style="color: var(--muted);"><%= (file.size / 1024).toFixed(1) %> KB</td>
+                  <td style="color: var(--muted);"><%= new Date(file.createdAt).toLocaleDateString() %></td>
+                  <td style="color: var(--muted);">
+                    <% const fileFolder = folders ? folders.find(function(fd) { return fd.id === file.folderId; }) : null; %>
+                    <%= fileFolder ? fileFolder.name : 'Root' %>
+                  </td>
+                  <td>
+                    <div class="td-actions">
+                      <a href="<%= file.url %>" target="_blank" class="btn btn--ghost btn--sm">Download</a>
+                      <form action="/files/<%= file.id %>/move" method="POST" class="form-row" style="gap:0.3rem;">
+                        <select name="folderId" style="font-size:0.78rem; padding: 0.25rem 0.4rem;">
+                          <option value="">Root</option>
+                          <% if (folders) { folders.forEach(function(folder) { %>
+                            <option value="<%= folder.id %>" <%= file.folderId === folder.id ? 'selected' : '' %>><%= folder.name %></option>
+                          <% }); } %>
+                        </select>
+                        <button type="submit" class="btn btn--ghost btn--sm">Move</button>
+                      </form>
+                      <form action="/files/<%= file.id %>/delete" method="POST">
+                        <button type="submit" class="btn btn--danger btn--sm">Delete</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        <% } else { %>
+          <p class="empty-state">No files uploaded yet.</p>
+        <% } %>
+      </div>
+
     <% } %>
 
-  <% } %>
-
-  <form action="/logout" method="POST">
-    <button type="submit">Log Out</button>
-  </form>
+  </div>
 </body>
 </html>
