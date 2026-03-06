@@ -114,6 +114,7 @@
                   <td style="color: var(--muted);"><%= new Date(file.createdAt).toLocaleDateString() %></td>
                   <td>
                     <div class="td-actions">
+                      <a href="/files/<%= file.id %>/preview" class="btn btn--ghost btn--sm">Preview</a>
                       <a href="/files/<%= file.id %>/download" class="btn btn--ghost btn--sm">Download</a>
                       <form action="/files/<%= file.id %>/move" method="POST" class="form-row" style="gap:0.3rem;">
                         <select name="folderId" style="font-size:0.78rem; padding: 0.25rem 0.4rem;">
@@ -200,6 +201,7 @@
                   </td>
                   <td>
                     <div class="td-actions">
+                      <a href="/files/<%= file.id %>/preview" class="btn btn--ghost btn--sm">Preview</a>
                       <a href="/files/<%= file.id %>/download" class="btn btn--ghost btn--sm">Download</a>
                       <form action="/files/<%= file.id %>/move" method="POST" class="form-row" style="gap:0.3rem;">
                         <select name="folderId" style="font-size:0.78rem; padding: 0.25rem 0.4rem;">

@@ -116,6 +116,37 @@ const moveFile = async (req, res, next) => {
   }
 };
 
+const previewFile = async (req, res, next) => {
+  try {
+    const file = await fileModel.getFileById(req.params.id);
+
+    if (!file) {
+      req.flash('error', 'File not found.');
+      return res.redirect('/dashboard');
+    }
+
+    if (file.userId !== req.user.id) {
+      req.flash('error', 'You do not have permission to preview this file.');
+      return res.redirect('/dashboard');
+    }
+
+    const parsedUrl = new URL(file.url);
+    const storagePath = parsedUrl.pathname.split(`/object/public/${BUCKET}/`)[1];
+
+    const { data, error: signError } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(storagePath, 300);
+
+    if (signError) {
+      return next(signError);
+    }
+
+    res.render('preview', { user: req.user, file, signedUrl: data.signedUrl });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const downloadFile = async (req, res, next) => {
   try {
     const file = await fileModel.getFileById(req.params.id);
@@ -147,4 +178,4 @@ const downloadFile = async (req, res, next) => {
   }
 };
 
-module.exports = { getFiles, uploadFile, deleteFile, moveFile, downloadFile };
+module.exports = { getFiles, uploadFile, deleteFile, moveFile, downloadFile, previewFile };
