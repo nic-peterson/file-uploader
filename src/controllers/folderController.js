@@ -1,6 +1,8 @@
 const folderModel = require('../models/folderModel');
 const fileModel = require('../models/fileModel');
 
+const PAGE_SIZE = 20;
+
 const createFolder = async (req, res, next) => {
   const { name } = req.body;
 
@@ -82,16 +84,25 @@ const viewFolder = async (req, res, next) => {
       return res.redirect('/dashboard');
     }
 
-    const [files, allFolders] = await Promise.all([
-      fileModel.getFilesInFolder(req.params.id),
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const skip = (page - 1) * PAGE_SIZE;
+
+    const [files, totalFiles, allFolders] = await Promise.all([
+      fileModel.getFilesInFolder(req.params.id, { skip, take: PAGE_SIZE }),
+      fileModel.countFilesInFolder(req.params.id),
       folderModel.getFoldersByUser(req.user.id),
     ]);
+
+    const totalPages = Math.ceil(totalFiles / PAGE_SIZE);
+    const pagination = { page, totalPages, total: totalFiles, pageSize: PAGE_SIZE };
 
     res.render('folder', {
       user: req.user,
       folder,
       files,
       allFolders,
+      pagination,
+      query: req.query,
     });
   } catch (err) {
     next(err);

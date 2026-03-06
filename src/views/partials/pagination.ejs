@@ -1,0 +1,27 @@
+<% if (pagination && pagination.totalPages > 1) { %>
+  <% const base = Object.assign({}, query); delete base.page; %>
+  <div class="pagination">
+    <% if (pagination.page > 1) { %>
+      <a href="?<%= new URLSearchParams(Object.assign({}, base, { page: pagination.page - 1 })).toString() %>">&laquo;</a>
+    <% } else { %>
+      <span class="disabled">&laquo;</span>
+    <% } %>
+
+    <% for (let p = 1; p <= pagination.totalPages; p++) { %>
+      <% if (p === pagination.page) { %>
+        <span class="active"><%= p %></span>
+      <% } else { %>
+        <a href="?<%= new URLSearchParams(Object.assign({}, base, { page: p })).toString() %>"><%= p %></a>
+      <% } %>
+    <% } %>
+
+    <% if (pagination.page < pagination.totalPages) { %>
+      <a href="?<%= new URLSearchParams(Object.assign({}, base, { page: pagination.page + 1 })).toString() %>">&raquo;</a>
+    <% } else { %>
+      <span class="disabled">&raquo;</span>
+    <% } %>
+  </div>
+  <p class="pagination-info">
+    Showing <%= (pagination.page - 1) * pagination.pageSize + 1 %>–<%= Math.min(pagination.page * pagination.pageSize, pagination.total) %> of <%= pagination.total %> files
+  </p>
+<% } %>

@@ -137,6 +137,7 @@
         <% } else { %>
           <p class="empty-state">No uncategorized files.</p>
         <% } %>
+        <%- include('partials/pagination', { pagination, query }) %>
       </div>
 
     <% } else { %>

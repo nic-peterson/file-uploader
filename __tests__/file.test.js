@@ -58,6 +58,8 @@ const loginAgent = async () => {
 beforeEach(() => {
   jest.clearAllMocks();
   fileModel.getFilesByUser.mockResolvedValue([]);
+  fileModel.getRootFiles.mockResolvedValue([]);
+  fileModel.countRootFiles.mockResolvedValue(0);
   folderModel.getFoldersByUser.mockResolvedValue([]);
 });
 
@@ -68,15 +70,16 @@ describe('GET /dashboard', () => {
     expect(res.headers.location).toBe('/login');
   });
 
-  test('renders dashboard for authenticated users and calls getFilesByUser and getFoldersByUser', async () => {
-    fileModel.getFilesByUser.mockResolvedValue([FAKE_FILE]);
+  test('renders dashboard for authenticated users and calls getRootFiles and getFoldersByUser', async () => {
+    fileModel.getRootFiles.mockResolvedValue([FAKE_FILE]);
+    fileModel.countRootFiles.mockResolvedValue(1);
     folderModel.getFoldersByUser.mockResolvedValue([]);
     const agent = await loginAgent();
 
     const res = await agent.get('/dashboard');
     expect(res.status).toBe(200);
     expect(res.text).toContain('Welcome');
-    expect(fileModel.getFilesByUser).toHaveBeenCalledWith(FAKE_USER.id);
+    expect(fileModel.getRootFiles).toHaveBeenCalledWith(FAKE_USER.id, expect.objectContaining({ skip: 0, take: 20 }));
     expect(folderModel.getFoldersByUser).toHaveBeenCalledWith(FAKE_USER.id);
   });
 });
