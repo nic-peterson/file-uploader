@@ -116,4 +116,35 @@ const moveFile = async (req, res, next) => {
   }
 };
 
-module.exports = { getFiles, uploadFile, deleteFile, moveFile };
+const downloadFile = async (req, res, next) => {
+  try {
+    const file = await fileModel.getFileById(req.params.id);
+
+    if (!file) {
+      req.flash('error', 'File not found.');
+      return res.redirect('/dashboard');
+    }
+
+    if (file.userId !== req.user.id) {
+      req.flash('error', 'You do not have permission to download this file.');
+      return res.redirect('/dashboard');
+    }
+
+    const parsedUrl = new URL(file.url);
+    const storagePath = parsedUrl.pathname.split(`/object/public/${BUCKET}/`)[1];
+
+    const { data, error: signError } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(storagePath, 60);
+
+    if (signError) {
+      return next(signError);
+    }
+
+    res.redirect(data.signedUrl);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getFiles, uploadFile, deleteFile, moveFile, downloadFile };

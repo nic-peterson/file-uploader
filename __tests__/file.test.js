@@ -16,6 +16,7 @@ jest.mock('../src/config/supabase', () => ({
       upload: jest.fn().mockResolvedValue({ data: {}, error: null }),
       getPublicUrl: jest.fn().mockReturnValue({ data: { publicUrl: 'https://test.supabase.co/object/public/test-bucket/user-id/test-file.txt' } }),
       remove: jest.fn().mockResolvedValue({ data: {}, error: null }),
+      createSignedUrl: jest.fn().mockResolvedValue({ data: { signedUrl: 'https://test.supabase.co/signed/test-file.txt' }, error: null }),
     })),
   },
 }));
@@ -167,5 +168,40 @@ describe('POST /files/:id/delete', () => {
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe('/dashboard');
     expect(fileModel.deleteFile).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /files/:id/download', () => {
+  test('redirects unauthenticated users to /login', async () => {
+    const res = await request(app).get(`/files/${FAKE_FILE.id}/download`);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/login');
+  });
+
+  test('redirects to signed URL for file owner', async () => {
+    fileModel.getFileById.mockResolvedValue(FAKE_FILE);
+    const agent = await loginAgent();
+
+    const res = await agent.get(`/files/${FAKE_FILE.id}/download`);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('https://test.supabase.co/signed/test-file.txt');
+  });
+
+  test('flashes error when file not found', async () => {
+    fileModel.getFileById.mockResolvedValue(null);
+    const agent = await loginAgent();
+
+    const res = await agent.get('/files/nonexistent-id/download');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/dashboard');
+  });
+
+  test('flashes error when user does not own file', async () => {
+    fileModel.getFileById.mockResolvedValue({ ...FAKE_FILE, userId: 'other-user-id' });
+    const agent = await loginAgent();
+
+    const res = await agent.get(`/files/${FAKE_FILE.id}/download`);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/dashboard');
   });
 });

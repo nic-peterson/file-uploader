@@ -16,6 +16,7 @@ jest.mock('../src/config/supabase', () => ({
       upload: jest.fn().mockResolvedValue({ data: {}, error: null }),
       getPublicUrl: jest.fn().mockReturnValue({ data: { publicUrl: 'https://test.supabase.co/...' } }),
       remove: jest.fn().mockResolvedValue({ data: {}, error: null }),
+      createSignedUrl: jest.fn().mockResolvedValue({ data: { signedUrl: 'https://test.supabase.co/signed/test' }, error: null }),
     })),
   },
 }));

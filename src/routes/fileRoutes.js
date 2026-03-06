@@ -20,6 +20,7 @@ const handleUpload = (req, res, next) => {
 };
 
 router.get('/dashboard', isAuthenticated, fileController.getFiles);
+router.get('/files/:id/download', isAuthenticated, fileController.downloadFile);
 router.post('/files/upload', isAuthenticated, handleUpload, fileController.uploadFile);
 router.post('/files/:id/delete', isAuthenticated, fileController.deleteFile);
 router.post('/files/:id/move', isAuthenticated, fileController.moveFile);
