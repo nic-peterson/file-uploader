@@ -69,6 +69,8 @@ Required vars:
 - `SUPABASE_URL` — Supabase project URL
 - `SUPABASE_ANON_KEY` — Supabase anon/public key
 - `SUPABASE_STORAGE_BUCKET` — Supabase storage bucket name
+- `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` — SMTP credentials for sending password reset emails (optional; falls back to Ethereal test accounts in development)
+- `EMAIL_FROM` — Sender address for outgoing mail (e.g. `"File Uploader" <noreply@example.com>`)
 
 ## Deployment
 
