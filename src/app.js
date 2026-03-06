@@ -52,8 +52,12 @@ app.get('/', (_req, res) => {
   res.redirect('/login');
 });
 
-app.use((_req, res) => {
-  res.status(404).json({ error: 'Not Found' });
+app.use((req, res) => {
+  if (req.isAuthenticated()) {
+    req.flash('error', `Page not found: ${req.path}`);
+    return res.redirect('/dashboard');
+  }
+  res.redirect('/login');
 });
 
 app.use((err, _req, res, _next) => {
