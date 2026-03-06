@@ -10,6 +10,7 @@ jest.mock('connect-pg-simple', () => {
 jest.mock('../src/models/userModel');
 jest.mock('../src/models/fileModel');
 jest.mock('../src/models/folderModel');
+jest.mock('../src/models/passwordResetModel');
 jest.mock('../src/config/supabase', () => ({
   storage: {
     from: jest.fn(() => ({
