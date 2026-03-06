@@ -205,3 +205,38 @@ describe('GET /files/:id/download', () => {
     expect(res.headers.location).toBe('/dashboard');
   });
 });
+
+describe('GET /files/:id/preview', () => {
+  test('redirects unauthenticated users to /login', async () => {
+    const res = await request(app).get(`/files/${FAKE_FILE.id}/preview`);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/login');
+  });
+
+  test('renders preview page for file owner', async () => {
+    fileModel.getFileById.mockResolvedValue(FAKE_FILE);
+    const agent = await loginAgent();
+
+    const res = await agent.get(`/files/${FAKE_FILE.id}/preview`);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain(FAKE_FILE.name);
+  });
+
+  test('flashes error when file not found', async () => {
+    fileModel.getFileById.mockResolvedValue(null);
+    const agent = await loginAgent();
+
+    const res = await agent.get('/files/nonexistent-id/preview');
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/dashboard');
+  });
+
+  test('flashes error when user does not own file', async () => {
+    fileModel.getFileById.mockResolvedValue({ ...FAKE_FILE, userId: 'other-user-id' });
+    const agent = await loginAgent();
+
+    const res = await agent.get(`/files/${FAKE_FILE.id}/preview`);
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe('/dashboard');
+  });
+});
