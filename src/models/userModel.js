@@ -18,4 +18,13 @@ const createUser = async ({ email, password, name }) => {
   });
 };
 
-module.exports = { findByEmail, findById, createUser };
+const updateProfile = async (id, { name, email }) => {
+  return prisma.user.update({ where: { id }, data: { name, email } });
+};
+
+const updatePassword = async (id, newPassword) => {
+  const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  return prisma.user.update({ where: { id }, data: { password: hashedPassword } });
+};
+
+module.exports = { findByEmail, findById, createUser, updateProfile, updatePassword };

@@ -7,6 +7,7 @@ const flash = require('express-flash');
 const authRoutes = require('./routes/authRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const folderRoutes = require('./routes/folderRoutes');
+const accountRoutes = require('./routes/accountRoutes');
 
 const PgStore = connectPgSimple(session);
 const app = express();
@@ -43,6 +44,7 @@ app.use(flash());
 app.use(authRoutes);
 app.use(fileRoutes);
 app.use(folderRoutes);
+app.use(accountRoutes);
 
 app.get('/api/test', (_req, res) => {
   res.json({ message: 'API is working!' });
