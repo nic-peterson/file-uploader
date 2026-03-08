@@ -88,6 +88,15 @@
       <%- include('partials/pagination', { pagination, query }) %>
     </div>
 
+    <div class="card">
+      <h2>Share Folder</h2>
+      <form action="/folders/<%= folder.id %>/share" method="POST" class="form-row">
+        
+        <input type="number" id="duration" name="duration" placeholder="e.g. 7" min="1" max="30" required style="width: 5rem;" /><label for="duration" style="white-space: nowrap;">days (1–30)</label>
+        <button type="submit" class="btn btn--primary btn--sm">Generate Link</button>
+      </form>
+    </div>
+
   </div>
 </body>
 </html>

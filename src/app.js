@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 const folderRoutes = require('./routes/folderRoutes');
 const accountRoutes = require('./routes/accountRoutes');
+const shareRoutes = require('./routes/shareRoutes');
 
 const PgStore = connectPgSimple(session);
 const app = express();
@@ -45,6 +46,7 @@ app.use(authRoutes);
 app.use(fileRoutes);
 app.use(folderRoutes);
 app.use(accountRoutes);
+app.use(shareRoutes);
 
 app.get('/api/test', (_req, res) => {
   res.json({ message: 'API is working!' });
@@ -53,6 +55,8 @@ app.get('/api/test', (_req, res) => {
 app.get('/', (_req, res) => {
   res.redirect('/login');
 });
+
+app.get('/favicon.ico', (_req, res) => res.status(204).end());
 
 app.use((req, res) => {
   if (req.isAuthenticated()) {

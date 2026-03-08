@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= folder.name %> - Shared Folder</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="page-wrap">
+
+    <div class="topbar">
+      <h1><%= folder.name %></h1>
+      <span style="color: var(--muted); font-size: 0.875rem;">
+        Shared folder &mdash; expires <%= new Date(expiresAt).toLocaleDateString() %>
+      </span>
+    </div>
+
+    <div class="card">
+      <h2>Files</h2>
+      <% if (files && files.length > 0) { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Size</th>
+              <th>Uploaded</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% files.forEach(function(file) { %>
+              <tr>
+                <td><%= file.name %></td>
+                <td style="color: var(--muted);"><%= file.type %></td>
+                <td style="color: var(--muted);"><%= (file.size / 1024).toFixed(1) %> KB</td>
+                <td style="color: var(--muted);"><%= new Date(file.createdAt).toLocaleDateString() %></td>
+                <td>
+                  <a href="<%= file.url %>" class="btn btn--ghost btn--sm" target="_blank" rel="noopener noreferrer">Download</a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <p class="empty-state">This folder is empty.</p>
+      <% } %>
+    </div>
+
+  </div>
+</body>
+</html>
