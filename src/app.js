@@ -56,6 +56,8 @@ app.get('/', (_req, res) => {
   res.redirect('/login');
 });
 
+app.get('/favicon.ico', (_req, res) => res.status(204).end());
+
 app.use((req, res) => {
   if (req.isAuthenticated()) {
     req.flash('error', `Page not found: ${req.path}`);
