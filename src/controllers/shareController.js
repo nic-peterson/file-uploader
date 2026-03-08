@@ -1,14 +1,13 @@
 const folderModel = require('../models/folderModel');
 const sharedFolderModel = require('../models/sharedFolderModel');
 
-const VALID_DURATION = /^(\d+)d$/;
 const MAX_DAYS = 30;
 
 const parseDays = (str) => {
-  if (!str) return null;
-  const match = VALID_DURATION.exec(str.trim());
-  if (!match) return null;
-  const days = parseInt(match[1], 10);
+  if (!str || !str.trim()) return null;
+  const num = Number(str.trim());
+  if (!Number.isFinite(num)) return null;
+  const days = Math.round(num);
   if (days < 1 || days > MAX_DAYS) return null;
   return days;
 };
@@ -29,7 +28,7 @@ const postShareFolder = async (req, res, next) => {
 
     const days = parseDays(req.body.duration);
     if (!days) {
-      req.flash('error', 'Invalid duration. Use a format like 1d, 7d, or 30d (max 30 days).');
+      req.flash('error', 'Please enter a whole number of days (1-30).');
       return res.redirect(`/folders/${folder.id}`);
     }
 
@@ -39,7 +38,7 @@ const postShareFolder = async (req, res, next) => {
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const shareUrl = `${baseUrl}/share/${share.token}`;
 
-    req.flash('success', `Share link (expires in ${days}d): ${shareUrl}`);
+    req.flash('success', `Share link (expires in ${days} day(s)): ${shareUrl}`);
     res.redirect(`/folders/${folder.id}`);
   } catch (err) {
     next(err);

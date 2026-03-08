@@ -87,7 +87,7 @@ beforeEach(() => {
 
 describe('POST /folders/:id/share', () => {
   test('redirects unauthenticated users to /login', async () => {
-    const res = await request(app).post('/folders/folder-uuid-1/share').send({ duration: '7d' });
+    const res = await request(app).post('/folders/folder-uuid-1/share').send({ duration: '7' });
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe('/login');
   });
@@ -96,7 +96,7 @@ describe('POST /folders/:id/share', () => {
     folderModel.getFolderById.mockResolvedValue(null);
     const agent = await loginAgent();
 
-    const res = await agent.post('/folders/nonexistent/share').send({ duration: '7d' });
+    const res = await agent.post('/folders/nonexistent/share').send({ duration: '7' });
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe('/dashboard');
     expect(sharedFolderModel.createShare).not.toHaveBeenCalled();
@@ -106,7 +106,7 @@ describe('POST /folders/:id/share', () => {
     folderModel.getFolderById.mockResolvedValue({ ...FAKE_FOLDER, userId: 'other-user-id' });
     const agent = await loginAgent();
 
-    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '7d' });
+    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '7' });
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe('/dashboard');
     expect(sharedFolderModel.createShare).not.toHaveBeenCalled();
@@ -122,7 +122,7 @@ describe('POST /folders/:id/share', () => {
     expect(sharedFolderModel.createShare).not.toHaveBeenCalled();
   });
 
-  test('redirects to folder when duration format is invalid', async () => {
+  test('redirects to folder when duration is non-numeric text', async () => {
     folderModel.getFolderById.mockResolvedValue(FAKE_FOLDER);
     const agent = await loginAgent();
 
@@ -132,21 +132,21 @@ describe('POST /folders/:id/share', () => {
     expect(sharedFolderModel.createShare).not.toHaveBeenCalled();
   });
 
-  test('redirects to folder when duration exceeds 30 days', async () => {
+  test('redirects to folder when duration exceeds 30', async () => {
     folderModel.getFolderById.mockResolvedValue(FAKE_FOLDER);
     const agent = await loginAgent();
 
-    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '31d' });
+    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '31' });
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe(`/folders/${FAKE_FOLDER.id}`);
     expect(sharedFolderModel.createShare).not.toHaveBeenCalled();
   });
 
-  test('redirects to folder when duration is 0d', async () => {
+  test('redirects to folder when duration is 0', async () => {
     folderModel.getFolderById.mockResolvedValue(FAKE_FOLDER);
     const agent = await loginAgent();
 
-    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '0d' });
+    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '0' });
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe(`/folders/${FAKE_FOLDER.id}`);
     expect(sharedFolderModel.createShare).not.toHaveBeenCalled();
@@ -157,12 +157,39 @@ describe('POST /folders/:id/share', () => {
     sharedFolderModel.createShare.mockResolvedValue(FAKE_SHARE);
     const agent = await loginAgent();
 
-    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '7d' });
+    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '7' });
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe(`/folders/${FAKE_FOLDER.id}`);
     expect(sharedFolderModel.createShare).toHaveBeenCalledWith(
       expect.objectContaining({ folderId: FAKE_FOLDER.id })
     );
+  });
+
+  test('rounds float duration to nearest integer', async () => {
+    folderModel.getFolderById.mockResolvedValue(FAKE_FOLDER);
+    sharedFolderModel.createShare.mockResolvedValue(FAKE_SHARE);
+    const agent = await loginAgent();
+
+    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '7.3' });
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe(`/folders/${FAKE_FOLDER.id}`);
+    expect(sharedFolderModel.createShare).toHaveBeenCalledWith(
+      expect.objectContaining({ folderId: FAKE_FOLDER.id })
+    );
+  });
+
+  test('rounds float up to nearest integer', async () => {
+    folderModel.getFolderById.mockResolvedValue(FAKE_FOLDER);
+    sharedFolderModel.createShare.mockResolvedValue(FAKE_SHARE);
+    const agent = await loginAgent();
+
+    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '7.8' });
+    expect(res.status).toBe(302);
+    expect(res.headers.location).toBe(`/folders/${FAKE_FOLDER.id}`);
+    const call = sharedFolderModel.createShare.mock.calls[0][0];
+    const expectedMs = 8 * 24 * 60 * 60 * 1000;
+    expect(call.expiresAt.getTime()).toBeGreaterThan(Date.now() + expectedMs - 5000);
+    expect(call.expiresAt.getTime()).toBeLessThan(Date.now() + expectedMs + 5000);
   });
 
   test('creates share with correct expiry date', async () => {
@@ -171,7 +198,7 @@ describe('POST /folders/:id/share', () => {
     const before = Date.now();
     const agent = await loginAgent();
 
-    await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '1d' });
+    await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '1' });
 
     const call = sharedFolderModel.createShare.mock.calls[0][0];
     const expectedMin = new Date(before + 1 * 24 * 60 * 60 * 1000);
@@ -180,12 +207,12 @@ describe('POST /folders/:id/share', () => {
     expect(call.expiresAt.getTime()).toBeLessThanOrEqual(expectedMax.getTime());
   });
 
-  test('accepts duration at maximum boundary (30d)', async () => {
+  test('accepts duration at maximum boundary (30)', async () => {
     folderModel.getFolderById.mockResolvedValue(FAKE_FOLDER);
     sharedFolderModel.createShare.mockResolvedValue(FAKE_SHARE);
     const agent = await loginAgent();
 
-    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '30d' });
+    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '30' });
     expect(res.status).toBe(302);
     expect(res.headers.location).toBe(`/folders/${FAKE_FOLDER.id}`);
     expect(sharedFolderModel.createShare).toHaveBeenCalled();
@@ -263,7 +290,7 @@ describe('POST /folders/:id/share error handling', () => {
     sharedFolderModel.createShare.mockRejectedValue(new Error('DB error'));
     const agent = await loginAgent();
 
-    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '7d' });
+    const res = await agent.post(`/folders/${FAKE_FOLDER.id}/share`).send({ duration: '7' });
     expect(res.status).toBe(500);
   });
 });
